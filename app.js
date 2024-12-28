@@ -1,5 +1,10 @@
 const API_KEY = ''; // Reemplaza con tu API key de OpenWeatherMap
 
+if (!API_KEY || API_KEY.length !== 32 ) {
+    alert('La API key no es válida. Debe ser una clave de exactamente 32 caracteres.');
+    throw new Error('API key no configurada');
+}
+
 async function getWeather() {
     const location = document.getElementById('location').value;
     if (!location) return;
@@ -24,10 +29,19 @@ async function getWeather() {
             updateUI(currentWeatherData);
             updateForecastUI(forecastData);
         } else {
-            alert('Ciudad no encontrada. Por favor, intenta de nuevo.');
+            // Mensaje más específico para ciudad no encontrada
+            if (currentWeatherData.cod === '404') {
+                alert('NO se encontró la ciudad. Por favor, verifica el nombre e intenta de nuevo.');
+            } else {
+                alert(`Error: ${currentWeatherData.message}`);
+            }
         }
     } catch (error) {
-        alert('Error al obtener el clima. Por favor, intenta de nuevo.');
+        if (error.message === 'API key no configurada') {
+            alert('No hay API key configurada. Por favor, configura una API key válida.');
+        } else {
+            alert('Error al obtener el clima. Por favor, intenta de nuevo.');
+        }
     } finally {
         document.getElementById('loader').classList.add('hidden');
     }
@@ -51,7 +65,7 @@ function updateForecastUI(data) {
     const forecastContainer = document.getElementById('forecast-container');
     forecastContainer.innerHTML = '';
 
-    // Agrupar pronósticos por día
+    // Agrupar pron��sticos por día
     const dailyForecasts = data.list.reduce((acc, forecast) => {
         const date = new Date(forecast.dt * 1000);
         const dateStr = date.toLocaleDateString('es-ES');
