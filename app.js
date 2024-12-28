@@ -13,27 +13,22 @@ async function getWeather() {
     document.getElementById('weather-info').classList.add('hidden');
 
     try {
-        // Obtener clima actual
-        const currentWeatherResponse = await fetch(
-            `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${API_KEY}&units=metric&lang=es`
-        );
-        const currentWeatherData = await currentWeatherResponse.json();
-
-        // Obtener previsión de 5 días
+        // Obtener clima actual y pronóstico en una sola llamada
         const forecastResponse = await fetch(
             `https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${API_KEY}&units=metric&lang=es`
         );
         const forecastData = await forecastResponse.json();
 
-        if (currentWeatherResponse.ok && forecastResponse.ok) {
-            updateUI(currentWeatherData);
+        if (forecastResponse.ok) {
+            // Usar el primer elemento del pronóstico como clima actual
+            updateUI(forecastData.list[0], forecastData.city.name);
+            updateHourlyForecast(forecastData.list);
             updateForecastUI(forecastData);
         } else {
-            // Mensaje más específico para ciudad no encontrada
-            if (currentWeatherData.cod === '404') {
-                alert('NO se encontró la ciudad. Por favor, verifica el nombre e intenta de nuevo.');
+            if (forecastData.cod === '404') {
+                alert('No se encontró la ciudad. Por favor, verifica el nombre e intenta de nuevo.');
             } else {
-                alert(`Error: ${currentWeatherData.message}`);
+                alert(`Error: ${forecastData.message}`);
             }
         }
     } catch (error) {
@@ -47,14 +42,14 @@ async function getWeather() {
     }
 }
 
-function updateUI(data) {
-    document.getElementById('city-name').textContent = data.name;
+function updateUI(data, cityName) {
+    document.getElementById('city-name').textContent = cityName;
     document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}°C`;
     document.getElementById('description').textContent = 
         data.weather[0].description.charAt(0).toUpperCase() + 
         data.weather[0].description.slice(1);
     document.getElementById('humidity').textContent = data.main.humidity;
-    document.getElementById('wind').textContent = Math.round(data.wind.speed * 3.6); // Convertir m/s a km/h
+    document.getElementById('wind').textContent = Math.round(data.wind.speed * 3.6);
     document.getElementById('weather-icon').src = 
         `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
 
@@ -65,7 +60,7 @@ function updateForecastUI(data) {
     const forecastContainer = document.getElementById('forecast-container');
     forecastContainer.innerHTML = '';
 
-    // Agrupar pron��sticos por día
+    // Agrupar pronósticos por día
     const dailyForecasts = data.list.reduce((acc, forecast) => {
         const date = new Date(forecast.dt * 1000);
         const dateStr = date.toLocaleDateString('es-ES');
@@ -124,6 +119,32 @@ function updateForecastUI(data) {
         `;
 
         forecastContainer.appendChild(forecastDay);
+    });
+}
+
+function updateHourlyForecast(forecastList) {
+    const hourlyContainer = document.getElementById('hourly-forecast-container');
+    hourlyContainer.innerHTML = '';
+
+    // Tomar las próximas 24 horas (8 períodos de 3 horas)
+    const next24Hours = forecastList.slice(0, 8);
+
+    next24Hours.forEach(forecast => {
+        const date = new Date(forecast.dt * 1000);
+        const hour = date.getHours();
+        const formattedHour = hour.toString().padStart(2, '0') + ':00';
+
+        const hourlyItem = document.createElement('div');
+        hourlyItem.className = 'hourly-item';
+        hourlyItem.innerHTML = `
+            <div class="hourly-time">${formattedHour}</div>
+            <img src="http://openweathermap.org/img/wn/${forecast.weather[0].icon}@2x.png" 
+                 alt="${forecast.weather[0].description}">
+            <div class="hourly-temp">${Math.round(forecast.main.temp)}°C</div>
+            <div class="hourly-description">${forecast.weather[0].description}</div>
+        `;
+
+        hourlyContainer.appendChild(hourlyItem);
     });
 }
 

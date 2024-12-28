@@ -186,4 +186,60 @@ button:hover {
     .forecast-day {
         padding: 1rem;
     }
+}
+
+.hourly-forecast-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #ccc;
+}
+
+.hourly-forecast-container {
+    display: flex;
+    overflow-x: auto;
+    padding: 1rem 0;
+    gap: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: #0077b6 #f0f0f0;
+}
+
+.hourly-forecast-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.hourly-forecast-container::-webkit-scrollbar-track {
+    background: #e4dcdc;
+    border-radius: 4px;
+}
+
+.hourly-forecast-container::-webkit-scrollbar-thumb {
+    background-color: #0077b6;
+    border-radius: 4px;
+}
+
+.hourly-item {
+    min-width: 100px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 0.5rem;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.hourly-time {
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.hourly-item img {
+    width: 50px;
+    height: 50px;
+    margin: 0.5rem auto;
+}
+
+.hourly-temp {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
 } 
